@@ -1,3 +1,5 @@
+#![feature(generic_const_exprs)]
+
 use std::time::Instant;
 use uom::si::f64::*;
 use uom::si::mass::{kilogram};
@@ -29,6 +31,7 @@ mod hash;
 mod cloud;
 mod chemistry;
 mod gas;
+mod transition;
 
 pub fn main() {
     let now = Instant::now();

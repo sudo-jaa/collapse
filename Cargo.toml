@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 num = "0.4.0"
+arrayvec = "0.7.2"
 uom = { version = "0.32.0", default-features = false, features = ["autoconvert", "f64", "si", "std", "try-from", "use_serde"]}
 colortemp = "0.1.0"
 float-cmp = "0.9.0"

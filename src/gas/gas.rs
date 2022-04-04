@@ -10,6 +10,7 @@ use crate::chemistry::molecules::molecules::Molecule;
 use crate::formulae::constants::GAS_CONSTANT;
 use crate::formulae::formulae::{density, mass};
 use crate::solar_mass;
+use crate::transition::transition::Transition;
 
 pub struct Gas {
     pub volume: Volume,
@@ -151,6 +152,27 @@ impl Gas {
     /// If the gas is not stable, it will collapse inward at a rate determined by [TODO: rate_of_collapse function]
     pub fn stable(&self) -> bool {
         self.mass < self.jeans_mass()
+    }
+}
+
+impl Transition for Gas {
+    type OutputSelf = Gas;
+    const S: usize = 6;
+
+    fn get_interpolatable_values_array(&self) -> [f64; Self::S] {
+        [self.temperature.value, self.density.value, self.mass.value, self.volume.value, self.moles.value, self.pressure.value]
+    }
+
+    fn apply_interpolatable_values_array(&self, values: [f64; Self::S]) -> Self {
+        Gas {
+            temperature: ThermodynamicTemperature::new::<kelvin>(*values.get(0).unwrap()),
+            density: MassDensity::new::<kilogram_per_cubic_meter>(*values.get(1).unwrap()),
+            mass: Mass::new::<kilogram>(*values.get(2).unwrap()),
+            volume: Volume::new::<cubic_meter>(*values.get(3).unwrap()),
+            moles: AmountOfSubstance::new::<mole>(*values.get(4).unwrap()),
+            pressure: Pressure::new::<pascal>(*values.get(5).unwrap()),
+            materials: self.materials.clone()
+        }
     }
 }
 

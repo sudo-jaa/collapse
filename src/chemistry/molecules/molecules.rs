@@ -14,7 +14,7 @@ use crate::units::units::mass::dalton;
 /// and the number of occurrences in the molecule.
 type MolecularComponent = (Element, usize);
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Molecule(Vec<MolecularComponent>);
 
 impl Molecule {

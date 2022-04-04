@@ -1,7 +1,7 @@
 use crate::chemistry::elements::elements::{Isotope, Stability};
 use crate::chemistry::elements::elements::Stability::Stable;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum CarbonIsotope {
     Carbon8,
     Carbon9,

@@ -57,7 +57,7 @@ pub trait Isotope {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Element {
     Hydrogen(HydrogenIsotope),
     Helium(HeliumIsotope),

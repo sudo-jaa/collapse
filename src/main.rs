@@ -1,5 +1,3 @@
-#![feature(generic_const_exprs)]
-
 use std::time::Instant;
 use uom::si::f64::*;
 use uom::si::mass::{kilogram};
@@ -16,7 +14,7 @@ use crate::chemistry::molecules::molecules::Molecule;
 use crate::cloud::cloud::{CloudOptions, MolecularCloud};
 use crate::coordinates::coordinates::{Cartesian, Coordinates};
 use crate::formulae::formulae::volume;
-use crate::gas::gas::Gas;
+use crate::gas::gas::{Composition, Gas};
 use crate::units::units::mass::{solar_mass};
 
 #[macro_use]
@@ -37,7 +35,7 @@ pub fn main() {
     let now = Instant::now();
     let volume = volume::sphere_volume_from_length(Length::new::<light_year>(600.0));
     let temperature: ThermodynamicTemperature = ThermodynamicTemperature::new::<kelvin>(15.0);
-    let cloud = Gas::composite_from_vacuum_properties(volume, 300.0, temperature, vec!(
+    let cloud = Gas::composite_from_vacuum_properties(volume, 300.0, temperature, Composition(vec!(
         (Molecule::molecular_hydrogen(), 84.0),
         (Molecule::carbon_monoxide(), 10.0),
         (Molecule::atomic_helium(), 5.0),
@@ -46,7 +44,7 @@ pub fn main() {
                 (Element::Silicon(SiliconIsotope::Silicon), 1)
             )
         ), 1.0)
-    ));
+    )));
     let elapsed = now.elapsed();
 
     println!("mass: {:?}", cloud.mass.into_format_args(solar_mass, Abbreviation));

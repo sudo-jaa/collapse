@@ -4,7 +4,7 @@ use crate::chemistry::elements::elements::{Beta, DecayType, DecayProperties, Iso
 use crate::chemistry::elements::elements::Stability::{Stable, Unstable};
 use crate::chemistry::elements::helium::HeliumIsotope;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, Eq, PartialEq)]
 pub enum HydrogenIsotope {
     Hydrogen,
     Deuterium,

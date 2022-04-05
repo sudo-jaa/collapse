@@ -4,7 +4,7 @@ use crate::chemistry::elements::elements::{DecayType, DecayProperties, Isotope, 
 use crate::chemistry::elements::elements::Stability::{Stable, Unstable};
 use crate::chemistry::elements::hydrogen::HydrogenIsotope;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, Eq, PartialEq)]
 pub enum SiliconIsotope {
     Silicon22,
     Silicon23,

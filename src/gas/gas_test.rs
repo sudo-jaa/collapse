@@ -12,7 +12,7 @@ mod tests {
     use crate::chemistry::molecules::molecules::Molecule;
     use crate::formulae::formulae::volume;
     use crate::gas::gas::Gas;
-    use crate::{solar_mass};
+    use crate::{Composition, solar_mass};
     use crate::chemistry::elements::elements::Element;
     use crate::chemistry::elements::silicon::SiliconIsotope;
 
@@ -87,7 +87,7 @@ mod tests {
     fn test_molecular_clouds() {
         let volume = volume::sphere_volume_from_length(Length::new::<light_year>(100.0));
         let temperature: ThermodynamicTemperature = ThermodynamicTemperature::new::<kelvin>(7.0);
-        let cloud = Gas::composite_from_vacuum_properties(volume, 300.0, temperature, vec!(
+        let cloud = Gas::composite_from_vacuum_properties(volume, 300.0, temperature, Composition(vec!(
             (Molecule::molecular_hydrogen(), 84.0),
             (Molecule::carbon_monoxide(), 10.0),
             (Molecule::atomic_helium(), 5.0),
@@ -96,7 +96,7 @@ mod tests {
                     (Element::Silicon(SiliconIsotope::Silicon), 1)
                 )
             ), 1.0)
-        ));
+        )));
 
         println!("mass of cloud: {}", cloud.mass.into_format_args(solar_mass, Abbreviation));
     }
@@ -104,19 +104,19 @@ mod tests {
     #[test]
     fn test_composite_density() {
         let target_density = Gas::generate_massdensity(&Molecule::atomic_hydrogen(), 300.0);
-        let density = Gas::generate_composite_massdensity(&vec!((Molecule::atomic_hydrogen(), 100.0)), 300.0);
+        let density = Gas::generate_composite_massdensity(&Composition(vec!((Molecule::atomic_hydrogen(), 100.0))), 300.0);
         assert_eq!(density, target_density);
 
         let target_density = Gas::generate_massdensity(&Molecule::atomic_hydrogen(), 300.0);
-        let density = Gas::generate_composite_massdensity(&vec!((Molecule::atomic_hydrogen(), 50.0), (Molecule::atomic_hydrogen(), 50.0)), 300.0);
+        let density = Gas::generate_composite_massdensity(&Composition(vec!((Molecule::atomic_hydrogen(), 50.0), (Molecule::atomic_hydrogen(), 50.0))), 300.0);
         assert_eq!(density, target_density);
 
         let target_density = Gas::generate_massdensity(&Molecule::atomic_hydrogen(), 300.0);
-        let density = Gas::generate_composite_massdensity(&vec!((Molecule::atomic_hydrogen(), 50.0), (Molecule::atomic_hydrogen(), 50.0)), 300.0);
+        let density = Gas::generate_composite_massdensity(&Composition(vec!((Molecule::atomic_hydrogen(), 50.0), (Molecule::atomic_hydrogen(), 50.0))), 300.0);
         assert_eq!(density, target_density);
 
         let target_density = Gas::generate_massdensity(&Molecule::molecular_hydrogen(), 300.0);
-        let density = Gas::generate_composite_massdensity(&vec!((Molecule::atomic_hydrogen(), 100.0), (Molecule::atomic_hydrogen(), 100.0)), 300.0);
+        let density = Gas::generate_composite_massdensity(&Composition(vec!((Molecule::atomic_hydrogen(), 100.0), (Molecule::atomic_hydrogen(), 100.0))), 300.0);
         assert_eq!(density, target_density);
     }
 

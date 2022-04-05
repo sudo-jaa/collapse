@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use itertools::Itertools;
 use uom::si::amount_of_substance::mole;
 use uom::si::f64::{AmountOfSubstance, Mass, MolarMass};
 use uom::si::mass::gram;
@@ -14,8 +15,17 @@ use crate::units::units::mass::dalton;
 /// and the number of occurrences in the molecule.
 type MolecularComponent = (Element, usize);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub struct Molecule(Vec<MolecularComponent>);
+
+impl PartialEq for Molecule {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.iter().zip(other.0.iter()).all(|((component_a_el, component_a_ratio), (component_b_el, component_b_ratio))| {
+            component_a_el == component_b_el && component_a_ratio == component_b_ratio
+        })
+    }
+}
+impl Eq for Molecule {}
 
 impl Molecule {
     /// Create a new molecule from a provided vector of molecular components

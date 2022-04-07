@@ -1,13 +1,16 @@
-use std::f64::consts;
-use crate::formulae::constants::{BOLTZMANN_CONSTANT, GRAVITATIONAL_CONSTANT, STEFAN_BOLTZMANN_CONSTANT, ZERO_POINT_LUMINOSITY};
-// use crate::randomness::prng::{Prng, Randomness};
+#[allow(dead_code)]
+use crate::formulae::constants::{
+    BOLTZMANN_CONSTANT, GRAVITATIONAL_CONSTANT, STEFAN_BOLTZMANN_CONSTANT, ZERO_POINT_LUMINOSITY,
+};
 use crate::units::units::mass::solar_mass;
 use crate::units::units::power::solar_luminosity;
+use crate::units::units::time::million_year;
 use colortemp::RGB;
-use std::f64::consts::PI;
 use num::integer::cbrt;
-use uom::num_traits::Pow;
+use std::f64::consts;
+use std::f64::consts::PI;
 use uom::num_traits::real::Real;
+use uom::num_traits::Pow;
 use uom::si::f64::{
     Area, Length, Mass, MassDensity, Power, ThermodynamicTemperature, Time, Volume,
 };
@@ -17,32 +20,71 @@ use uom::si::power::watt;
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::time::year;
 use uom::typenum;
-// use xorshift::{Rng, SeedableRng, Xoroshiro128};
-use crate::units::units::time::million_year;
 
 pub mod moles {
-    use uom::si::amount_of_substance::{mole};
-    use uom::si::f64::{Pressure, ThermodynamicTemperature, Volume, AmountOfSubstance};
     use crate::formulae::constants::GAS_CONSTANT;
+    use uom::si::amount_of_substance::mole;
+    use uom::si::f64::{AmountOfSubstance, Pressure, ThermodynamicTemperature, Volume};
 
-    pub fn from_pressure_volume_temperature(pressure: Pressure, volume: Volume, temperature: ThermodynamicTemperature) -> AmountOfSubstance {
-        AmountOfSubstance::new::<mole>(pressure.value * volume.value) / (GAS_CONSTANT * temperature.value)
+    pub fn from_pressure_volume_temperature(
+        pressure: Pressure,
+        volume: Volume,
+        temperature: ThermodynamicTemperature,
+    ) -> AmountOfSubstance {
+        AmountOfSubstance::new::<mole>(pressure.value * volume.value)
+            / (GAS_CONSTANT * temperature.value)
+    }
+}
+
+pub mod wavelength {
+    use uom::fmt::DisplayStyle::Abbreviation;
+    use uom::si::frequency::{centihertz, decihertz, gigahertz, hectohertz, kilohertz};
+    use uom::si::length::centimeter;
+    use uom::si::{
+        f64::{Frequency, Length, ThermodynamicTemperature},
+        frequency::hertz,
+        length::{meter, nanometer},
+    };
+
+    use crate::formulae::constants::PEAK_FREQUENCY_CONSTANT;
+    use crate::{
+        formulae::constants::WIENS_DISPLACEMENT_CONSTANT, wavelength::wavelength::Wavelength,
+    };
+
+    /// Calculate the peak wavelength/frequency of an object based on it's temperature.
+    /// Derived from Wien's Law.
+    pub fn from_temperature(temperature: ThermodynamicTemperature) -> Wavelength {
+        let wvlnth = Length::new::<meter>(WIENS_DISPLACEMENT_CONSTANT / temperature.value);
+        let freq =
+            Frequency::new::<kilohertz>(PEAK_FREQUENCY_CONSTANT * temperature.value / 1000.0);
+
+        println!("FUNCTION GOT len {:?}", wvlnth);
+        println!(
+            "FUNCTION GOT fre {:?}",
+            freq.into_format_args(gigahertz, Abbreviation)
+        );
+
+        Wavelength::new(wvlnth, freq)
     }
 }
 
 pub mod mass {
+    use crate::formulae::constants::{BOLTZMANN_CONSTANT, GRAVITATIONAL_CONSTANT};
     use std::f64::consts;
     use uom::si::f64::{Mass, MassDensity, ThermodynamicTemperature, Volume};
     use uom::si::mass::kilogram;
-    use crate::formulae::constants::{BOLTZMANN_CONSTANT, GRAVITATIONAL_CONSTANT};
 
     /// Mass that a spherical cloud of interstellar gas must have in order to contract under its own weight
-    pub fn jeans_mass(temperature: ThermodynamicTemperature, mean_mass_per_particle: Mass, density: MassDensity) -> Mass {
-        let c1 = density.value.powf(-1.0/2.0);
-        let c2 = temperature.value.powf(3.0/2.0);
+    pub fn jeans_mass(
+        temperature: ThermodynamicTemperature,
+        mean_mass_per_particle: Mass,
+        density: MassDensity,
+    ) -> Mass {
+        let c1 = density.value.powf(-1.0 / 2.0);
+        let c2 = temperature.value.powf(3.0 / 2.0);
         let c3 = 5.0 * BOLTZMANN_CONSTANT;
         let c4 = GRAVITATIONAL_CONSTANT * mean_mass_per_particle.value;
-        let res = c1 * c2 * ((c3 / c4).powf(3.0/2.0)) * f64::sqrt(3.0/(4.0 * consts::PI));
+        let res = c1 * c2 * ((c3 / c4).powf(3.0 / 2.0)) * f64::sqrt(3.0 / (4.0 * consts::PI));
         Mass::new::<kilogram>(res)
     }
 
@@ -80,20 +122,25 @@ pub mod length {
 }
 
 pub mod density {
+    use crate::formulae::constants::GAS_CONSTANT;
     use uom::si::f64::{Mass, MassDensity, MolarMass, Pressure, ThermodynamicTemperature, Volume};
     use uom::si::mass_density::kilogram_per_cubic_meter;
     use uom::si::molar_mass::gram_per_mole;
     use uom::si::pressure::atmosphere;
-    use crate::formulae::constants::GAS_CONSTANT;
 
     pub fn from_mass_and_volume(mass: Mass, volume: Volume) -> MassDensity {
         mass / volume
     }
 
-    pub fn from_molar_mass_pressure_temperature(molar_mass: MolarMass, pressure: Pressure, temperature: ThermodynamicTemperature) -> MassDensity {
-        MassDensity::new::<kilogram_per_cubic_meter>(((molar_mass.value) * (pressure.value) / (GAS_CONSTANT * temperature.value)))
+    pub fn from_molar_mass_pressure_temperature(
+        molar_mass: MolarMass,
+        pressure: Pressure,
+        temperature: ThermodynamicTemperature,
+    ) -> MassDensity {
+        MassDensity::new::<kilogram_per_cubic_meter>(
+            ((molar_mass.value) * (pressure.value) / (GAS_CONSTANT * temperature.value)),
+        )
     }
-
 }
 
 pub fn calculate_luminosity(
@@ -172,7 +219,6 @@ pub fn bv_to_rgb(bv: f64) -> RGB {
         b: b * 255.0,
     }
 }
-
 
 pub fn calculate_temperature(
     luminosity: Power,

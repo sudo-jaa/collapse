@@ -2,26 +2,32 @@
 mod tests {
     extern crate uom;
 
-    use float_cmp::approx_eq;
+    use float_cmp::{approx_eq, assert_approx_eq};
+    use uom::si::frequency::terahertz;
 
-    use crate::formulae::formulae::{area, calculate_absolute_magnitude, calculate_colour, calculate_luminosity, calculate_temperature, density, mass, volume};
+    use crate::formulae::constants::VACUUM_PERMEABILITY;
+    use crate::formulae::formulae::{
+        area, calculate_absolute_magnitude, calculate_colour, calculate_luminosity,
+        calculate_temperature, density, mass, volume, wavelength,
+    };
     use crate::units::units::length::{earth_radius, solar_radius};
     use crate::units::units::mass::{earth_mass, solar_mass};
     use crate::units::units::power::solar_luminosity;
+    use crate::wavelength::wavelength::Wavelength;
     use colortemp::RGB;
+    use uom::fmt::DisplayStyle::Abbreviation;
+    use uom::num_traits::pow::pow;
     use uom::si::area::square_kilometer;
     use uom::si::area::square_meter;
     use uom::si::f64::*;
+    use uom::si::inductance::henry;
     use uom::si::information::mebibit;
-    use uom::si::length::{kilometer, meter};
+    use uom::si::length::{kilometer, meter, nanometer};
     use uom::si::mass::{gram, kilogram, nanogram};
     use uom::si::mass_density::kilogram_per_cubic_meter;
     use uom::si::power::gigawatt;
     use uom::si::thermodynamic_temperature::kelvin;
     use uom::si::volume::cubic_meter;
-    use uom::num_traits::pow::{pow};
-    use uom::si::inductance::henry;
-    use crate::formulae::constants::VACUUM_PERMEABILITY;
 
     #[test]
     fn formula_surface_area() {
@@ -30,6 +36,40 @@ mod tests {
 
         let earth = area::sphere_surface_from_radius(Length::new::<earth_radius>(1.0));
         assert_eq!(earth, Area::new::<square_meter>(510064471909788.25));
+    }
+
+    #[test]
+    fn test_wiens_law() {
+        let wv: Wavelength =
+            wavelength::from_temperature(ThermodynamicTemperature::new::<kelvin>(1.0));
+        assert_approx_eq!(
+            f64,
+            wv.peak_wavelength.value,
+            Length::new::<nanometer>(2897771.9549999996).value,
+            ulps = 2
+        );
+        assert_approx_eq!(
+            f64,
+            wv.peak_frequency.value,
+            Frequency::new::<terahertz>(0.058789232).value,
+            ulps = 2
+        );
+
+        let wv: Wavelength =
+            wavelength::from_temperature(ThermodynamicTemperature::new::<kelvin>(5778.0));
+
+        assert_approx_eq!(
+            f64,
+            wv.peak_wavelength.value,
+            Length::new::<nanometer>(501.5181645898235).value,
+            ulps = 2
+        );
+        assert_approx_eq!(
+            f64,
+            wv.peak_frequency.value,
+            Frequency::new::<terahertz>(339.684182496000).value,
+            ulps = 2
+        );
     }
 
     #[test]
@@ -165,7 +205,13 @@ mod tests {
 
     #[test]
     fn formula_mass_from_density_and_volume() {
-        assert_eq!(mass::from_volume_and_density(Volume::new::<cubic_meter>(20.0), MassDensity::new::<kilogram_per_cubic_meter>(100.0)), Mass::new::<gram>(2000000.0));
+        assert_eq!(
+            mass::from_volume_and_density(
+                Volume::new::<cubic_meter>(20.0),
+                MassDensity::new::<kilogram_per_cubic_meter>(100.0)
+            ),
+            Mass::new::<gram>(2000000.0)
+        );
     }
 
     #[test]

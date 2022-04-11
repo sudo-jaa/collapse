@@ -21,6 +21,21 @@ use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::time::year;
 use uom::typenum;
 
+pub mod time {
+    use uom::si::{
+        f64::{MassDensity, Time},
+        time::second,
+    };
+
+    use crate::formulae::constants::GRAVITATIONAL_CONSTANT_COLLPASE_ADJUSTMENT;
+
+    pub fn gravitational_freefall(density: MassDensity) -> Time {
+        let tff: f64 =
+            (1.0 / (GRAVITATIONAL_CONSTANT_COLLPASE_ADJUSTMENT * (density.value * 10.0))).sqrt();
+        Time::new::<second>(tff)
+    }
+}
+
 pub mod moles {
     use crate::formulae::constants::GAS_CONSTANT;
     use uom::si::amount_of_substance::mole;
@@ -90,6 +105,25 @@ pub mod mass {
 
     pub fn from_volume_and_density(volume: Volume, density: MassDensity) -> Mass {
         density * volume
+    }
+}
+
+pub mod force {
+    use num::traits::Pow;
+    use uom::{
+        si::{
+            f64::{Force, Length, Mass},
+            force::newton,
+        },
+        typenum::P2,
+    };
+
+    use crate::formulae::constants::GRAVITATIONAL_CONSTANT;
+
+    pub fn from_gravitation(mass_a: Mass, mass_b: Mass, distance: Length) -> Force {
+        Force::new::<newton>(
+            (GRAVITATIONAL_CONSTANT * mass_a.value * mass_b.value) / distance.value.pow(2.0),
+        )
     }
 }
 

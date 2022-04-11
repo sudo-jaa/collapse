@@ -3,12 +3,13 @@ mod tests {
     extern crate uom;
 
     use float_cmp::{approx_eq, assert_approx_eq};
+    use uom::si::force::newton;
     use uom::si::frequency::terahertz;
 
     use crate::formulae::constants::VACUUM_PERMEABILITY;
     use crate::formulae::formulae::{
         area, calculate_absolute_magnitude, calculate_colour, calculate_luminosity,
-        calculate_temperature, density, mass, volume, wavelength,
+        calculate_temperature, density, force, mass, volume, wavelength,
     };
     use crate::units::units::length::{earth_radius, solar_radius};
     use crate::units::units::mass::{earth_mass, solar_mass};
@@ -28,6 +29,18 @@ mod tests {
     use uom::si::power::gigawatt;
     use uom::si::thermodynamic_temperature::kelvin;
     use uom::si::volume::cubic_meter;
+
+    #[test]
+    fn gravity_force_test() {
+        let mass_a = Mass::new::<kilogram>(1000.0);
+        let mass_b = Mass::new::<kilogram>(1.0);
+        let distance = Length::new::<meter>(10.0);
+
+        assert_eq!(
+            force::from_gravitation(mass_a, mass_b, distance),
+            Force::new::<newton>(6.673999999999999e-10)
+        );
+    }
 
     #[test]
     fn formula_surface_area() {

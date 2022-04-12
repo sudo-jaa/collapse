@@ -20,3 +20,5 @@ pub(crate) const WIENS_DISPLACEMENT_CONSTANT: f64 = 2.897771955E-3;
 pub(crate) const PEAK_FREQUENCY_CONSTANT: f64 = 5.8789232E10;
 
 pub(crate) const AVOGADRO_CONSTANT: f64 = 6.02214076e23;
+
+pub(crate) const C: f64 = 2.99792458E8;

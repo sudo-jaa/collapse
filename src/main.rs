@@ -1,4 +1,5 @@
-#[allow(dead_code)]
+#![allow(dead_code)]
+
 use crate::chemistry::elements::elements::Element;
 use crate::chemistry::elements::silicon::SiliconIsotope;
 use crate::chemistry::molecules::molecules::Molecule;
@@ -41,27 +42,63 @@ mod units;
 mod wavelength;
 
 pub fn main() {
-    let volume = volume::sphere_volume_from_length(Length::new::<light_year>(600.0));
-    let temperature: ThermodynamicTemperature = ThermodynamicTemperature::new::<kelvin>(15.0);
+    // let volume = volume::sphere_volume_from_length(Length::new::<light_year>(600.0));
+    // let temperature: ThermodynamicTemperature = ThermodynamicTemperature::new::<kelvin>(15.0);
+    // let cloud = UniformGas::composite_from_vacuum_properties(
+    //     volume,
+    //     200000000.0,
+    //     temperature,
+    //     Composition(vec![
+    //         (Molecule::molecular_hydrogen(), 84.0),
+    //         (Molecule::carbon_monoxide(), 10.0),
+    //         (Molecule::atomic_helium(), 5.0),
+    //         (
+    //             Molecule::new(vec![(Element::Silicon(SiliconIsotope::Silicon), 1)]),
+    //             1.0,
+    //         ),
+    //     ]),
+    // );
+
+    // println!("will collapse? {}", cloud.stable());
+
+    // let n = cloud.next_state();
+
+    // println!("{:?}", cloud);
+    // println!("{:?}", n.0);
+    // println!("{:?}", n.1.into_format_args(year, Abbreviation));
+
+    let volume = volume::sphere_volume_from_length(Length::new::<parsec>(2.0));
+    let temperature: ThermodynamicTemperature = ThermodynamicTemperature::new::<kelvin>(50.0);
     let cloud = UniformGas::composite_from_vacuum_properties(
         volume,
-        200000000.0,
+        4.0e2 * 1000000.0,
         temperature,
         Composition(vec![
-            (Molecule::molecular_hydrogen(), 84.0),
-            (Molecule::carbon_monoxide(), 10.0),
-            (Molecule::atomic_helium(), 5.0),
+            (Molecule::molecular_hydrogen(), 95.0),
+            (Molecule::carbon_monoxide(), 2.5),
+            (Molecule::atomic_helium(), 2.4),
             (
                 Molecule::new(vec![(Element::Silicon(SiliconIsotope::Silicon), 1)]),
-                1.0,
+                0.1,
             ),
         ]),
     );
 
-    let n = cloud.next_state();
+    // let n = cloud.next_state();
 
-    println!("{:?}", n.0);
-    println!("{:?}", n.1.into_format_args(year, Abbreviation));
+    println!(
+        "jeans radius? {}",
+        cloud.jeans_radius().into_format_args(parsec, Abbreviation)
+    );
+    println!(
+        "jeans mass? {:?}",
+        cloud
+            .jeans_mass()
+            .into_format_args(solar_mass, Abbreviation)
+    );
+    println!("potential? {:?}", cloud.potential_energy());
+    // println!("next? {}", n.1.into_format_args(year, Abbreviation));
+
     // println!("tff {:?}", tff.into_format_args(year, Abbreviation));
     // let now = Instant::now();
     // let volume = volume::sphere_volume_from_length(Length::new::<light_year>(600.0));

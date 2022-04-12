@@ -1,8 +1,9 @@
 use crate::chemistry::molecules::molecules::Molecule;
 use crate::formulae::constants::{AVOGADRO_CONSTANT, GAS_CONSTANT};
-use crate::formulae::formulae::{density, force, length, mass, time, wavelength};
+use crate::formulae::formulae::{density, energy, force, length, mass, time, wavelength};
 use crate::solar_mass;
 use crate::transition::transition::{EasingFunction, Interpolatable, Interpolationf64AsyncOptions};
+use crate::units::units::mass::dalton;
 use crate::units::units::time::{million_year, thousand_year};
 use crate::wavelength::wavelength::Wavelength;
 use std::collections::HashMap;
@@ -10,7 +11,7 @@ use uom::fmt::DisplayStyle::Abbreviation;
 use uom::si::amount_of_substance::mole;
 use uom::si::energy::joule;
 use uom::si::f64::{
-    AmountOfSubstance, Energy, Force, Frequency, Mass, MassDensity, Pressure,
+    AmountOfSubstance, Energy, Force, Frequency, Length, Mass, MassDensity, Pressure,
     ThermodynamicTemperature, Time, Volume,
 };
 use uom::si::frequency::hertz;
@@ -96,7 +97,6 @@ pub struct UniformGas {
     pub density: MassDensity,
 
     state: CosmicState,
-    fragmentations: usize, //TODO!!!! determine the number of fragmentations this cloud can experience during collapse
 }
 
 impl UniformGas {
@@ -112,6 +112,13 @@ impl UniformGas {
 
     pub fn radiation_wavelength(&self) -> Wavelength {
         wavelength::from_temperature(self.temperature)
+    }
+
+    pub fn potential_energy(&self) -> Energy {
+        energy::gravitational_energy_of_sphere(
+            self.mass,
+            length::sphere_radius_from_volume(self.volume),
+        )
     }
 
     // pub fn resize(self, new_volume: Volume) -> (UniformGas, Time) {
@@ -376,21 +383,52 @@ impl UniformGas {
         UniformGas::construct_from_ideal_properties(volume, moles, pressure, temperature, material)
     }
 
-    /// Calculate the jeans mass of this gas entity
-    fn jeans_mass(&self) -> Mass {
-        let average_particle_mass: Mass = self
-            .materials
+    fn average_particle_mass(&self) -> Mass {
+        self.materials
             .0
             .iter()
             .fold(Mass::new::<kilogram>(0.0), |acc, (material, ratio)| {
                 material.molecular_weight() * (ratio / 100.0)
-            });
+            })
+    }
+
+    pub fn jeans_radius(&self) -> Length {
+        let mean_molecular_weight = self.materials.0.iter().fold(0.0, |acc, (material, ratio)| {
+            println!(
+                "adding weight of {}. {:?}",
+                material,
+                material
+                    .molecular_weight()
+                    .into_format_args(dalton, Abbreviation)
+            );
+            acc + (material.relative_formula_mass() * ratio)
+        }) / 100.0;
+        // println!(
+        //     "mean weight {}",
+        //     mean_molecular_weight.into_format_args(dalton, Abbreviation)
+        // );
+        length::jeans_radius(
+            self.mass,
+            length::sphere_radius_from_volume(self.volume),
+            self.temperature,
+            self.density,
+            mean_molecular_weight,
+        )
+    }
+
+    /// Calculate the jeans mass of this gas entity
+    pub fn jeans_mass(&self) -> Mass {
+        let average_particle_mass: Mass = self.average_particle_mass();
         mass::jeans_mass(self.temperature, average_particle_mass, self.density)
     }
 
     /// Calculate whether this gas is below the mass threshold for collapsing under it's own gravity.
     /// If the gas is not stable, it will collapse inward at a rate determined by [TODO: rate_of_collapse function]
     pub fn stable(&self) -> bool {
+        println!(
+            "check stability. Mj {}",
+            self.jeans_mass().into_format_args(solar_mass, Abbreviation)
+        );
         self.mass < self.jeans_mass()
     }
 }

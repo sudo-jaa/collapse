@@ -1,15 +1,15 @@
-use std::fmt::{Display, Formatter};
-use itertools::Itertools;
-use uom::si::amount_of_substance::mole;
-use uom::si::f64::{AmountOfSubstance, Mass, MolarMass};
-use uom::si::mass::gram;
-use uom::si::molar_mass::gram_per_mole;
 use crate::chemistry::elements::carbon::CarbonIsotope;
 use crate::chemistry::elements::elements::Element;
 use crate::chemistry::elements::helium::HeliumIsotope;
 use crate::chemistry::elements::hydrogen::HydrogenIsotope;
 use crate::chemistry::elements::oxygen::OxygenIsotope;
 use crate::units::units::mass::dalton;
+use itertools::Itertools;
+use std::fmt::{Display, Formatter};
+use uom::si::amount_of_substance::mole;
+use uom::si::f64::{AmountOfSubstance, Mass, MolarMass};
+use uom::si::mass::gram;
+use uom::si::molar_mass::gram_per_mole;
 
 /// A component of a molecular formula. Represents the actual elemental isotope
 /// and the number of occurrences in the molecule.
@@ -20,9 +20,11 @@ pub struct Molecule(Vec<MolecularComponent>);
 
 impl PartialEq for Molecule {
     fn eq(&self, other: &Self) -> bool {
-        self.0.iter().zip(other.0.iter()).all(|((component_a_el, component_a_ratio), (component_b_el, component_b_ratio))| {
-            component_a_el == component_b_el && component_a_ratio == component_b_ratio
-        })
+        self.0.iter().zip(other.0.iter()).all(
+            |((component_a_el, component_a_ratio), (component_b_el, component_b_ratio))| {
+                component_a_el == component_b_el && component_a_ratio == component_b_ratio
+            },
+        )
     }
 }
 impl Eq for Molecule {}
@@ -35,60 +37,49 @@ impl Molecule {
 
     /// Helper function for creating an instance of a molecular hydrogen molecule
     pub fn molecular_hydrogen() -> Molecule {
-        Molecule::new(vec!(
-            (Element::Hydrogen(HydrogenIsotope::Hydrogen), 2)
-        ))
+        Molecule::new(vec![(Element::Hydrogen(HydrogenIsotope::Hydrogen), 2)])
     }
 
     /// Helper function for creating an instance of a atomic hydrogen molecule
     pub fn atomic_hydrogen() -> Molecule {
-        Molecule::new(vec!(
-            (Element::Hydrogen(HydrogenIsotope::Hydrogen), 1)
-        ))
+        Molecule::new(vec![(Element::Hydrogen(HydrogenIsotope::Hydrogen), 1)])
     }
-
 
     /// Helper function for creating an instance of a water molecule
     pub fn water() -> Molecule {
-        Molecule::new(
-            vec!(
-                (Element::Hydrogen(HydrogenIsotope::Hydrogen), 2),
-                (Element::Oxygen(OxygenIsotope::Oxygen), 1)
-            )
-        )
+        Molecule::new(vec![
+            (Element::Hydrogen(HydrogenIsotope::Hydrogen), 2),
+            (Element::Oxygen(OxygenIsotope::Oxygen), 1),
+        ])
     }
 
     /// Helper function for creating an instance of a carbon monoxide molecule
     pub fn carbon_monoxide() -> Molecule {
-        Molecule::new(vec!(
+        Molecule::new(vec![
             (Element::Carbon(CarbonIsotope::Carbon), 1),
-            (Element::Oxygen(OxygenIsotope::Oxygen), 1)
-        ))
+            (Element::Oxygen(OxygenIsotope::Oxygen), 1),
+        ])
     }
 
     /// Helper function for creating an instance of a carbon dioxide molecule
     pub fn carbon_dioxide() -> Molecule {
-        Molecule::new(vec!(
+        Molecule::new(vec![
             (Element::Carbon(CarbonIsotope::Carbon), 1),
-            (Element::Oxygen(OxygenIsotope::Oxygen), 2)
-        ))
+            (Element::Oxygen(OxygenIsotope::Oxygen), 2),
+        ])
     }
 
     /// Helper function for creating an instance of a O2 molecule
     pub fn molecular_oxygen() -> Molecule {
-        Molecule::new(vec!(
-            (Element::Oxygen(OxygenIsotope::Oxygen), 2)
-        ))
+        Molecule::new(vec![(Element::Oxygen(OxygenIsotope::Oxygen), 2)])
     }
 
     /// Helper function for creating an instance of an atomic helium molecule
     pub fn atomic_helium() -> Molecule {
-        Molecule::new(vec!(
-            (Element::Helium(HeliumIsotope::Helium), 1)
-        ))
+        Molecule::new(vec![(Element::Helium(HeliumIsotope::Helium), 1)])
     }
 
-    fn relative_formula_mass(&self) -> f64 {
+    pub fn relative_formula_mass(&self) -> f64 {
         self.0.iter().fold(0.0, |acc, (element, count)| {
             acc + (element.data().atomic_mass_number() * *count as f64)
         })
@@ -106,7 +97,9 @@ impl Molecule {
 
     /// Get the amount of substance in a given mass
     pub fn amount(&self, mass: Mass) -> AmountOfSubstance {
-        AmountOfSubstance::new::<mole>((mass.value / Mass::new::<gram>(1.0).value) / self.relative_formula_mass())
+        AmountOfSubstance::new::<mole>(
+            (mass.value / Mass::new::<gram>(1.0).value) / self.relative_formula_mass(),
+        )
     }
 
     /// Get the mass of an amount of substance
@@ -118,7 +111,16 @@ impl Molecule {
 impl Display for Molecule {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let formula = self.0.iter().fold(String::new(), |formula, molecule| {
-            format!("{}{}{}", formula, molecule.0.symbol(), if molecule.1 > 1 {molecule.1.to_string()} else {String::new()})
+            format!(
+                "{}{}{}",
+                formula,
+                molecule.0.symbol(),
+                if molecule.1 > 1 {
+                    molecule.1.to_string()
+                } else {
+                    String::new()
+                }
+            )
         });
         write!(f, "{}", formula)
     }

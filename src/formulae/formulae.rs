@@ -9,6 +9,7 @@ use colortemp::RGB;
 use num::integer::cbrt;
 use std::f64::consts;
 use std::f64::consts::PI;
+use uom::fmt::DisplayStyle::Abbreviation;
 use uom::num_traits::real::Real;
 use uom::num_traits::Pow;
 use uom::si::f64::{
@@ -24,7 +25,7 @@ use uom::typenum;
 pub mod time {
     use uom::si::{
         f64::{MassDensity, Time},
-        time::second,
+        time::{second, year},
     };
 
     use crate::formulae::constants::GRAVITATIONAL_CONSTANT_COLLPASE_ADJUSTMENT;
@@ -33,6 +34,21 @@ pub mod time {
         let tff: f64 =
             (1.0 / (GRAVITATIONAL_CONSTANT_COLLPASE_ADJUSTMENT * (density.value * 10.0))).sqrt();
         Time::new::<second>(tff)
+    }
+}
+
+pub mod energy {
+    use num::traits::Pow;
+    use uom::si::{
+        energy::joule,
+        f64::{Energy, Length, Mass},
+    };
+
+    use crate::formulae::constants::GRAVITATIONAL_CONSTANT;
+
+    pub fn gravitational_energy_of_sphere(mass: Mass, radius: Length) -> Energy {
+        let energy = (3.0 / 5.0) * ((GRAVITATIONAL_CONSTANT * mass.value).pow(2.0) / radius.value);
+        Energy::new::<joule>(energy)
     }
 }
 
@@ -146,12 +162,34 @@ pub mod volume {
 }
 
 pub mod length {
+    use num::traits::Pow;
     use std::f64::consts::PI;
-    use uom::si::f64::{Length, Volume};
+    use uom::si::f64::{Length, Mass, MassDensity, ThermodynamicTemperature, Volume};
     use uom::si::length::meter;
+
+    use crate::formulae::constants::{BOLTZMANN_CONSTANT, GRAVITATIONAL_CONSTANT};
+    use crate::formulae::formulae::energy;
+    use crate::units::units::mass::dalton;
 
     pub fn sphere_radius_from_volume(volume: Volume) -> Length {
         Length::new::<meter>(f64::cbrt(3.0 * volume.value / (4.0 * PI)))
+    }
+
+    pub fn jeans_radius(
+        mass: Mass,
+        radius: Length,
+        temperature: ThermodynamicTemperature,
+        density: MassDensity,
+        mean_molecular_weight: f64,
+    ) -> Length {
+        let j = (15.0 * BOLTZMANN_CONSTANT * temperature.value)
+            / (4.0
+                * PI
+                * GRAVITATIONAL_CONSTANT
+                * Mass::new::<dalton>(1.0).value
+                * mean_molecular_weight
+                * density.value);
+        Length::new::<meter>(j.pow(0.5))
     }
 }
 
@@ -174,6 +212,20 @@ pub mod density {
         MassDensity::new::<kilogram_per_cubic_meter>(
             ((molar_mass.value) * (pressure.value) / (GAS_CONSTANT * temperature.value)),
         )
+    }
+}
+
+pub mod power {
+    use uom::si::f64::{Energy, Length, Mass, Power};
+
+    pub fn from_gravitational_collapse(
+        potential_energy: Energy,
+        mass: Mass,
+        radius: Length,
+    ) -> Power {
+        //todo needs jeans radius
+        // (3.0/10.0) * ((GRAVITATIONAL_CONSTANT * mass).pow(2.0) / radius.value.pow(2.0)) * ()
+        todo!()
     }
 }
 
